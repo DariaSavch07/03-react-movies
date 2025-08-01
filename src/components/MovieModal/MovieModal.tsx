@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 import styles from './MovieModal.module.css';
 import type { Movie } from '../../types/movie';
-
 
 interface MovieModalProps {
   movie: Movie;
@@ -11,30 +10,26 @@ interface MovieModalProps {
 
 const modalRoot = document.getElementById('modal-root') as HTMLElement;
 
-const MovieModal: React.FC<MovieModalProps> = ({ movie, onClose }) => {
+export default function MovieModal({ movie, onClose }: MovieModalProps) {
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
     };
 
     document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleEsc);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = 'auto';
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [onClose]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    if (e.target === e.currentTarget) onClose();
   };
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <div className={styles.backdrop} role="dialog" aria-modal="true" onClick={handleBackdropClick}>
       <div className={styles.modal}>
         <button className={styles.closeButton} aria-label="Close modal" onClick={onClose}>
@@ -59,6 +54,4 @@ const MovieModal: React.FC<MovieModalProps> = ({ movie, onClose }) => {
     </div>,
     modalRoot
   );
-};
-
-export default MovieModal;
+}
