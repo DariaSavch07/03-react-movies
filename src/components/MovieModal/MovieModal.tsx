@@ -1,35 +1,44 @@
-import React, { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import styles from './MovieModal.module.css';
-import type { Movie } from '../../types/movie';
+import { useEffect } from "react";
+import ReactDOM from "react-dom";
+import styles from "./MovieModal.module.css";
+import type { Movie } from "../../types/movie";
 
 interface MovieModalProps {
   movie: Movie;
   onClose: () => void;
 }
 
-const modalRoot = document.getElementById('modal-root') as HTMLElement;
-
 export default function MovieModal({ movie, onClose }: MovieModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") {
+        onClose();
+      }
     };
 
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKeyDown);
+    const handleBodyScroll = () => {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    const cleanup = handleBodyScroll();
 
     return () => {
-      document.body.style.overflow = 'auto';
-      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
+      cleanup();
     };
   }, [onClose]);
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onClose();
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
   };
 
-  return createPortal(
+  return ReactDOM.createPortal(
     <div className={styles.backdrop} role="dialog" aria-modal="true" onClick={handleBackdropClick}>
       <div className={styles.modal}>
         <button className={styles.closeButton} aria-label="Close modal" onClick={onClose}>
@@ -52,6 +61,6 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
         </div>
       </div>
     </div>,
-    modalRoot
+    document.body
   );
 }
